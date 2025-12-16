@@ -5,6 +5,10 @@ from sv_ttk import set_theme
 import ctypes
 import subprocess
 
+__version__ = "1.0.2"
+__app_name__ = "Hyper-V Quick Toggle"
+__author__ = "Mizu"
+
 # --------------------------------------------------------
 # Costanti
     
@@ -20,44 +24,70 @@ def is_admin():
     except:
         return False
 
-def set_hyperV(stato):
+def run_command(cmd_list):
     try:
-        #cmd = f'bcdedit /set hypervisorlaunchtype {stato}'
-        #subprocess.run(["powershell", "-Command", cmd], check=True, creationflags=subprocess.CREATE_NO_WINDOW)
-        
-        subprocess.run(
-            ["bcdedit", "/set", "hypervisorlaunchtype", stato],
-            check=True,
+        result = subprocess.run(
+            cmd_list,
             capture_output=True,
+            text=True,
+            check=True,
             creationflags=subprocess.CREATE_NO_WINDOW
         )
-        
-        messagebox.showinfo("Successo", f"Hyper-V portato a stato {stato}.\nRiavvia il PC per applicare la modifica.")
-    
+        return result.stdout.strip()
     except subprocess.CalledProcessError as e:
-        messagebox.showerror("Errore", e.stderr.decode(errors="ignore"))
+        raise RuntimeError(e.stderr.strip())
     except Exception as e:
-        messagebox.showerror("Errore", str(e))
+        raise RuntimeError(str(e))
 
 def reboot():
     try:
-        subprocess.run(["shutdown", "/r", "/t", "0"], check=True, creationflags=subprocess.CREATE_NO_WINDOW)
+        run_command(["shutdown", "/r", "/t", "0"])
     except Exception as e:
         messagebox.showerror("Errore", str(e))
 
-def status():
+def get_status():
     try:
-        cmd = f'bcdedit /enum | findstr hypervisorlaunchtype'
-        result = subprocess.run(["powershell", "-Command", cmd], capture_output=True, text=True, check=True, creationflags=subprocess.CREATE_NO_WINDOW)
-        stato_attuale = result.stdout.strip()
-        if(STATO_OFF in stato_attuale):
+        output = run_command(["bcdedit"])
+        print(output)
+        if("hypervisorlaunchtype    off" in output.lower()):
                 messagebox.showinfo("Successo", f" Stato attuale: \"OFF\"")
         else:
             messagebox.showinfo("Successo", f" Stato attuale \"ON\"")
-    except subprocess.CalledProcessError:
-        messagebox.showerror("Errore", "Errore nell'esecuzione del comando.")
     except Exception as e:
         messagebox.showerror("Errore", str(e))
+
+def set_hyperV(stato):
+    try:        
+        run_command(["bcdedit", "/set", "hypervisorlaunchtype", stato])
+        messagebox.showinfo("Successo", f"Hyper-V portato a stato {stato}.\nRiavvia il PC per applicare la modifica.")
+    except Exception as e:
+        messagebox.showerror("Errore", str(e))
+
+class HyperVApp(tk.Tk):
+    
+    # Label informativa
+    def __init__(self):
+        super().__init__()
+        self.title("HyperV")
+        self.geometry("400x275")
+        self.minsize(380, 225)
+        set_theme("dark")
+        self.create_widgets()
+    
+    # Creazione della finestra principale dell'applicazione
+    # Pulsanti per selezionare le varie opzioni
+    def create_widgets(self):
+        ttk.Label(self, text="Opzioni disponibili:").pack(pady=10)
+
+        ttk.Button(self, text=f"Accendi HyperV ({STATO_ON})",
+                   width=25, command=lambda: set_hyperV(STATO_ON)).pack(pady=5)
+
+        ttk.Button(self, text=f"Spegni HyperV ({STATO_OFF})",
+                   width=25, command=lambda: set_hyperV(STATO_OFF)).pack(pady=5)
+
+        ttk.Button(self, text="Riavvia il PC", width=25, command=reboot).pack(pady=5)
+        ttk.Button(self, text="Verifica HyperV", width=25, command=get_status).pack(pady=5)
+        ttk.Button(self, text="Esci", width=25, command=self.destroy).pack(pady=5)
 
 def main():
     
@@ -71,42 +101,9 @@ def main():
         return
         
     # ----------------------------
-    # Label informativa
-    
-    root = tk.Tk()
-    root.title("HyperV")
-    root.geometry("400x275")
-    root.minsize(380, 225)
-    
-    set_theme("dark")
-    
-    # ----------------------------
-    # Creazione della finestra principale dell'applicazione
-    
-    ttk.Label(root, text="Opzioni disponibili:").pack(pady=10)
-
-    # ----------------------------
-    # Pulsanti per selezionare le varie opzioni
-    
-    ttk.Button(root, text=f"Accendi HyperV ({STATO_ON})", width=25,
-            command=lambda: set_hyperV(STATO_ON)).pack(pady=5)
-
-    ttk.Button(root, text=f"Spegni HyperV ({STATO_OFF})", width=25,
-            command=lambda: set_hyperV(STATO_OFF)).pack(pady=5)
-
-    ttk.Button(root, text=f"Riavvia il PC", width=25,
-            command=reboot).pack(pady=5)
-
-    ttk.Button(root, text=f"Verifica HyperV", width=25,
-            command=status).pack(pady=5)
-
-    ttk.Button(root, text="Esci", width=25,
-            command=root.destroy).pack(pady=5)
-
-    # ----------------------------
     # Avvio del loop principale dell'interfaccia grafica
-
-    root.mainloop()
+    app = HyperVApp()
+    app.mainloop()
     
 if __name__ == '__main__':
     main()

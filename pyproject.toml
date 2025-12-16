@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "HyperV-Quick-Toggle"
+version = "1.0.2"
+description = "GUI per abilitare/disabilitare Hyper-V su Windows"
+authors = [
+    { name = "Mizu" }
+]
+readme = "README.md"
+requires-python = ">=3.10"
+
+dependencies = [
+    "sv-ttk>=2.5"
+]
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: Microsoft :: Windows",
+    "Environment :: Win32 (MS Windows)",
+    "Intended Audience :: End Users/Desktop",
+    "Topic :: System :: Systems Administration"
+]
