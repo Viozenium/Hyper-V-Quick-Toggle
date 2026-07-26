@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "HyperV-Quick-Toggle"
-version = "1.2.0"
+version = "1.3.0"
 description = "GUI per abilitare/disabilitare Hyper-V su Windows"
 authors = [
     { name = "Mizu" }
@@ -15,6 +15,9 @@ license = { text = "MIT" }
 
 dependencies = []
 
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: Microsoft :: Windows",
@@ -22,3 +25,12 @@ classifiers = [
     "Intended Audience :: End Users/Desktop",
     "Topic :: System :: Systems Administration"
 ]
+
+[project.scripts]
+hyperv-toggle = "hyperv_toggle.__main__:main"
+
+[tool.setuptools]
+packages = ["hyperv_toggle"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -3,7 +3,7 @@ dist/
 build/
 
 # File generato da PyInstaller o simili
-Hyper-V.spec
+*.spec
 
 # Altri file temporanei / editor
 __pycache__/
@@ -12,3 +12,6 @@ __pycache__/
 *.pyd
 *.swp
 *.DS_Store
+
+# pytest
+.pytest_cache/
